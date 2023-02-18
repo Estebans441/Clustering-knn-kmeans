@@ -29,14 +29,18 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=1 / 3, rando
 
 # Defining the best number of neighbors
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix, accuracy_score
 
 wcss = []
 for i in range(1, 9):
     classifier = KNeighborsClassifier(n_neighbors=i, metric='minkowski', p=2)
     classifier.fit(X_train, y_train)
     y_pred = classifier.predict(X_test)
-    wcss.append(accuracy_score(y_test, y_pred)*100)
+    cm = confusion_matrix(y_test, y_pred)
+    print("Cm ", i)
+    print(cm)
+    print(accuracy_score(y_test, y_pred))
+    wcss.append(accuracy_score(y_test, y_pred) * 100)
 plt.plot(range(1, 9), wcss)
 plt.title('Accuracy score using k neighbors')
 plt.xlabel('Number of neighbors')
@@ -76,7 +80,6 @@ for i, X_set, y_set in [(1, X_set_train, y_set_train), (0.36, X_set_test, y_set_
     for j in range(6):
         plt.scatter(X_set[y_set == j, 0], X_set[y_set == j, 2],
                     color=colors[j], alpha=i, label='Cluster {}'.format(j))
-
 plt.title("KNN clustering")
 plt.xlabel("Age")
 plt.ylabel("Spending Score")
@@ -88,7 +91,6 @@ for i, X_set, y_set in [(1, X_set_train, y_set_train), (0.36, X_set_test, y_set_
     for j in range(6):
         plt.scatter(X_set[y_set == j, 0], X_set[y_set == j, 1],
                     color=colors[j], alpha=i, label='Cluster {}'.format(j))
-
 plt.title("KNN clustering")
 plt.xlabel("Age")
 plt.ylabel("Annual Income")
@@ -100,65 +102,36 @@ for i, X_set, y_set in [(1, X_set_train, y_set_train), (0.36, X_set_test, y_set_
     for j in range(6):
         plt.scatter(X_set[y_set == j, 1], X_set[y_set == j, 2],
                     color=colors[j], alpha=i, label='Cluster {}'.format(j))
-
 plt.title("KNN clustering")
 plt.ylabel("Spending Score")
 plt.xlabel("Annual Income")
 plt.legend()
 plt.show()
 
-
 # Visualising the Dataset in 3D
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-X_set, y_set = sc.inverse_transform(X_train), y_train
-for i in range(0, len(X_set)):
-    if y_set[i] == 0:
-        ax.scatter(X_set[i, 0], X_set[i, 1], X_set[i, 2], color='red')
-    if y_set[i] == 1:
-        ax.scatter(X_set[i, 0], X_set[i, 1], X_set[i, 2], color='blue')
-    if y_set[i] == 2:
-        ax.scatter(X_set[i, 0], X_set[i, 1], X_set[i, 2], color='yellowgreen')
-    if y_set[i] == 3:
-        ax.scatter(X_set[i, 0], X_set[i, 1], X_set[i, 2], color='orange')
-    if y_set[i] == 4:
-        ax.scatter(X_set[i, 0], X_set[i, 1], X_set[i, 2], color='gold')
-    if y_set[i] == 5:
-        ax.scatter(X_set[i, 0], X_set[i, 1], X_set[i, 2], color='mediumorchid')
 
-X_set, y_set = sc.inverse_transform(X_test), y_test
-for i in range(0, len(X_set)):
-    if y_set[i] == 0:
-        ax.scatter(X_set[i, 0], X_set[i, 1], X_set[i, 2], color='lightcoral')
-    if y_set[i] == 1:
-        ax.scatter(X_set[i, 0], X_set[i, 1], X_set[i, 2], color='skyblue')
-    if y_set[i] == 2:
-        ax.scatter(X_set[i, 0], X_set[i, 1], X_set[i, 2], color='limegreen')
-    if y_set[i] == 3:
-        ax.scatter(X_set[i, 0], X_set[i, 1], X_set[i, 2], color='darkorange')
-    if y_set[i] == 4:
-        ax.scatter(X_set[i, 0], X_set[i, 1], X_set[i, 2], color='gold')
-    if y_set[i] == 5:
-        ax.scatter(X_set[i, 0], X_set[i, 1], X_set[i, 2], color='mediumorchid')
-
+for i, X_set, y_set in [(1, sc.inverse_transform(X_train), y_train), (0.36, sc.inverse_transform(X_test), y_test)]:
+    for j in range(6):
+        alpha_val = i if j in y_set else 0
+        ax.scatter(X_set[y_set == j, 0], X_set[y_set == j, 1], X_set[y_set == j, 2],
+                   color=colors[j], alpha=alpha_val, label='Cluster {}'.format(j))
 ax.set_title("KNN clustering")
 ax.set_xlabel("Age")
 ax.set_ylabel("Annual Income (k$)")
 ax.set_zlabel("Spending Score (1-100)")
 plt.show()
 
-
 # Interactive 3D plot
 import plotly.express as px
 
 df_train = pd.DataFrame(data=X_train, columns=["Age", "Annual Income", "Spending Score"])
 df_train["Target"] = y_train
-
 df_test = pd.DataFrame(data=X_test, columns=["Age", "Annual Income", "Spending Score"])
 df_test["Target"] = y_test
-
-fig = px.scatter_3d(df_train, x="Age", y="Annual Income", z="Spending Score", color="Target", opacity=1, title="KNN clustering")
-
-fig.add_trace(px.scatter_3d(df_test, x="Age", y="Annual Income", z="Spending Score", color="Target", opacity=0.6).data[0])
-
+fig = px.scatter_3d(df_train, x="Age", y="Annual Income", z="Spending Score", color="Target", opacity=1,
+                    title="KNN clustering")
+fig.add_trace(
+    px.scatter_3d(df_test, x="Age", y="Annual Income", z="Spending Score", color="Target", opacity=0.6).data[0])
 fig.show()
