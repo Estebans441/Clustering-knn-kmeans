@@ -19,14 +19,7 @@ cols = ['BALANCE', 'ONEOFF_PURCHASES', 'INSTALLMENTS_PURCHASES', 'CASH_ADVANCE',
 for col in cols:
     dataset[col] = np.log(1 + dataset[col])
 
-# Decomposition
-from sklearn.decomposition import PCA
-
-pca = PCA(n_components=0.95)
-X = pca.fit_transform(dataset)
-
 # Extracting the data
-print(dataset.head())
 X = dataset.iloc[:, :].values
 
 # Using the elbow method to find the optimal number of clusters
